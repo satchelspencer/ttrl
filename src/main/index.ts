@@ -3,6 +3,7 @@ import * as path from 'path'
 import { format as formatUrl } from 'url'
 
 import initSpeech from  './speech'
+import './svgo'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -20,7 +21,7 @@ function createMainWindow() {
           slashes: true,
         })
 
-  if (true || isDevelopment) window.webContents.openDevTools({ mode: 'detach' })
+  if (isDevelopment) window.webContents.openDevTools({ mode: 'detach' })
 
   window.loadURL(windowUrl)
   const destroySpeech = initSpeech(window)

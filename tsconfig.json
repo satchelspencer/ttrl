@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "strictNullChecks": false
   }
 }

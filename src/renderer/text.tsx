@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import ctyled from 'ctyled'
 
-import { onText } from './audio'
+import listen from './audio'
+import {Template} from './index'
 
-const TextWrapper = ctyled.div.styles({})
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
@@ -63,8 +63,34 @@ function layoutAllPaths(lpaths, text) {
   })
 }
 
+const TemplateSVGPreview = ctyled.div.styles({
+  column: true,
+  align: 'center',
+  justify: 'center',
+  bg: true,
+  color: c => c.contrast(0.2),
+}).extendSheet`
+  position:absolute;
+  width:100%;
+  height:100%;
+
+  & svg {
+    max-width:90%;
+    max-height:90%;
+    fill:none;
+  }
+
+  & svg path {
+    stroke:none;
+  }
+
+  & svg textPath {
+    fill:black;
+  }
+`
+
 export interface TextProps {
-  svgString: string
+  template: Template
 }
 
 export default function Text(props: TextProps) {
@@ -75,19 +101,21 @@ export default function Text(props: TextProps) {
 
     let output = '',
       tempOutput = ''
-    onText(d => {
+    const stop = listen(d => {
       tempOutput = ''
       d.forEach(res => {
         if (res.final) output += res.text + ' '
         else tempOutput += res.text + ' '
       })
+      //console.log(output + tempOutput)
       layoutAllPaths(lpaths, output + tempOutput)
     })
-  }, [props.svgString])
+    return stop
+  }, [props.template])
   return (
-    <TextWrapper
+    <TemplateSVGPreview
       inRef={wrapperRef}
-      dangerouslySetInnerHTML={{ __html: props.svgString }}
+      dangerouslySetInnerHTML={{ __html: props.template.data }}
     />
   )
 }

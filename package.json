@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@google-cloud/speech": "^3.2.2",
+    "@types/svgo": "^1.2.0",
     "ctyled": "^0.0.15",
     "express": "^4.17.1",
     "react": "^16.8.6",

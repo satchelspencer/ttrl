@@ -40,8 +40,11 @@ function startRecording(stream: MediaStream) {
   scriptProcessor.addEventListener('audioprocess', streamAudioData)
 }
 
+let active = false
+
 const c = Math.pow(2, 15)
 const streamAudioData = (e: any) => {
+  if(!active) return
   const floatSamples = resample(e.inputBuffer.getChannelData(0), 44100, 8000)
   const arr = Int16Array.from(floatSamples.map(n => n * c))
   ipcRenderer.send('audio', arr)
@@ -53,6 +56,11 @@ ipcRenderer.on('text', (e, text) => {
   cb && cb(text)
 })
 
-export function onText(callback: (text: any) => void){
+export default function listen(callback: (text: any) => void){
+  active = true
   cb = callback
+  return () => {
+    active = false
+    ipcRenderer.send('stop')
+  }
 }

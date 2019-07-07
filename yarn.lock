@@ -993,6 +993,11 @@
     "@types/node" "*"
     "@types/tough-cookie" "*"
 
+"@types/svgo@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@types/svgo/-/svgo-1.2.0.tgz#22e83b6e85eb28ed6ef754ab972a1a7e733aaeef"
+  integrity sha512-6Sy9BjW+Pxs8MDeYVxAQ5yh/LcP7IiR9w8K0Ez/eGFhBPfEfGdZrrfFiCVU0tYYR2dGTaz+rITEUED9hbxc0OA==
+
 "@types/tinycolor2@^1.4.2":
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/@types/tinycolor2/-/tinycolor2-1.4.2.tgz#721ca5c5d1a2988b4a886e35c2ffc5735b6afbdf"
