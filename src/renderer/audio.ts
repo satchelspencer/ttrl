@@ -47,6 +47,12 @@ const streamAudioData = (e: any) => {
   ipcRenderer.send('audio', arr)
 }
 
+let cb: any = null
+
 ipcRenderer.on('text', (e, text) => {
-  console.log('AUIUH', text)
+  cb && cb(text)
 })
+
+export function onText(callback: (text: any) => void){
+  cb = callback
+}

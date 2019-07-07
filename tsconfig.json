@@ -7,6 +7,8 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
 }
