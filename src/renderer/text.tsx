@@ -2,8 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import ctyled from 'ctyled'
 
 import listen from './audio'
-import {Template} from './index'
-
+import { Template } from './index'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
@@ -19,16 +18,26 @@ function initTextPaths(svg) {
           .toString(32)
           .substr(2)
       )
+
+    let size = 0
+    try {
+      size = parseFloat(path.getAttribute('stroke-width'))
+      console.log(path, size)
+    } catch (e) {}
+    if(!size) return null
+
     const textPath = document.createElementNS(SVG_NS, 'textPath')
     textPath.setAttribute('href', '#' + path.id)
+    textPath.style.fontSize = size+'px'
     path.setAttributeNS(null, 'stroke', 'none')
     text.appendChild(textPath)
+
     return {
       path,
       textPath,
       length: path.getTotalLength(),
     }
-  })
+  }).filter(a => a)
 }
 
 function layTextOntoPath(lpath, text) {
@@ -91,6 +100,7 @@ const TemplateSVGPreview = ctyled.div.styles({
 
 export interface TextProps {
   template: Template
+  deviceId: string
 }
 
 export default function Text(props: TextProps) {
@@ -101,7 +111,7 @@ export default function Text(props: TextProps) {
 
     let output = '',
       tempOutput = ''
-    const stop = listen(d => {
+    const stop = listen(props.deviceId, d => {
       tempOutput = ''
       d.forEach(res => {
         if (res.final) output += res.text + ' '

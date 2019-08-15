@@ -76,12 +76,15 @@ const TemplateSVGPreview = ctyled.div.styles({
   }
 `
 
-const CornerWrapper = ctyled.div.class(active).class(inline).styles({
-  hover: true,
-  size: s => s*2,
-  width: 0.88,
-  bg: false
-}).extendSheet`
+const CornerWrapper = ctyled.div
+  .class(active)
+  .class(inline)
+  .styles({
+    hover: true,
+    size: s => s * 2,
+    width: 0.88,
+    bg: false,
+  }).extendSheet`
   position:absolute;
   top:0;
   right:0;
@@ -116,10 +119,14 @@ function TemplateInput(props: TemplateInputProps) {
         <TemplateSVGPreview dangerouslySetInnerHTML={{ __html: props.value.data }} />
       )}
       {props.value && (
-        <CornerWrapper onClick={e => {
-          e.stopPropagation()
-          props.onChange(null)
-        }}>&times;</CornerWrapper>
+        <CornerWrapper
+          onClick={e => {
+            e.stopPropagation()
+            props.onChange(null)
+          }}
+        >
+          &times;
+        </CornerWrapper>
       )}
     </TemplateWrapper>
   )
@@ -146,17 +153,47 @@ const Button = ctyled.button
     `}
   `
 
-interface ConfigProps{
+interface ConfigProps {
   template: Template
   setTemplate: (val: Template) => any
   onStart: () => any
+  deviceId: string
+  setDeviceId: (d: string) => any
 }
 
 function Config(props: ConfigProps) {
+  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([])
+  useEffect(() => {
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then(res =>
+        setAvailableDevices(res.filter(device => device.kind === 'audioinput'))
+      )
+  }, [])
   return (
     <ConfigWrapper>
       <TemplateInput value={props.template} onChange={props.setTemplate} />
-      <Button onClick={props.onStart} disabled={!props.template} styles={{ size: s => s * 1.1 }}>
+      {!!availableDevices.length ? (
+        <select
+          value={props.deviceId}
+          onChange={e => props.setDeviceId(e.currentTarget.value)}
+        >
+          {availableDevices.map(device => {
+            return (
+              <option key={device.deviceId} value={device.deviceId}>
+                {device.label}
+              </option>
+            )
+          })}
+        </select>
+      ) : (
+        'loading audio inputs...'
+      )}
+      <Button
+        onClick={props.onStart}
+        disabled={!props.template}
+        styles={{ size: s => s * 1.1 }}
+      >
         start
       </Button>
     </ConfigWrapper>
@@ -165,11 +202,12 @@ function Config(props: ConfigProps) {
 
 function App() {
   const [template, setTemplate] = useState<Template>(null),
-    [running, setRunning] = useState(false)
+    [running, setRunning] = useState(false),
+    [deviceId, setDeviceId] = useState('default')
 
   useEffect(() => {
-    const handle = (e) => {
-      if(e.key === 'Escape') setRunning(false)
+    const handle = e => {
+      if (e.key === 'Escape') setRunning(false)
     }
     window.addEventListener('keydown', handle)
     return () => window.removeEventListener('keydown', handle)
@@ -177,11 +215,13 @@ function App() {
 
   return (
     <Wrapper>
-      <Config {...{template, setTemplate}} onStart={() => setRunning(true)}/>
-      {running && <Text template={template}/>}
+      <Config
+        {...{ template, setTemplate, deviceId, setDeviceId }}
+        onStart={() => setRunning(true)}
+      />
+      {running && <Text template={template} deviceId={deviceId} />}
     </Wrapper>
   )
 }
-
 
 ReactDOM.render(<App />, document.getElementById('app'))

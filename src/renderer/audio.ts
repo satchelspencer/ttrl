@@ -1,12 +1,5 @@
 import { ipcRenderer } from 'electron'
 
-navigator.mediaDevices
-  .getUserMedia({
-    audio: true,
-  })
-  .then(startRecording)
-  .catch(e => console.log(e))
-
 function resample(buffer: any, fromSampleRate: any, toSampleRate: any) {
   const frac = fromSampleRate / toSampleRate,
     newLength = Math.floor(buffer.length / frac),
@@ -29,34 +22,42 @@ function resample(buffer: any, fromSampleRate: any, toSampleRate: any) {
   return result
 }
 
-function startRecording(stream: MediaStream) {
-  const audioContext = new AudioContext({})
+const audioContext = new AudioContext({}),
+  c = Math.pow(2, 15)
 
-  const microphone = audioContext.createMediaStreamSource(stream),
-    scriptProcessor = audioContext.createScriptProcessor(2048, 2, 2)
+let active = false,
+  currentStream = null
 
-  microphone.connect(scriptProcessor)
-  scriptProcessor.connect(audioContext.destination)
-  scriptProcessor.addEventListener('audioprocess', streamAudioData)
-}
+function init(deviceId: string) {
+  if (currentStream) currentStream.getTracks().forEach(track => track.stop())
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: {deviceId : deviceId?{exact: deviceId}:undefined},
+    })
+    .then((stream: MediaStream) => {
+      currentStream = stream
+      const microphone = audioContext.createMediaStreamSource(stream),
+        scriptProcessor = audioContext.createScriptProcessor(2048, 2, 2)
 
-let active = false
-
-const c = Math.pow(2, 15)
-const streamAudioData = (e: any) => {
-  if(!active) return
-  const floatSamples = resample(e.inputBuffer.getChannelData(0), 44100, 8000)
-  const arr = Int16Array.from(floatSamples.map(n => n * c))
-  ipcRenderer.send('audio', arr)
+      microphone.connect(scriptProcessor)
+      scriptProcessor.connect(audioContext.destination)
+      scriptProcessor.addEventListener('audioprocess', (e: any) => {
+        if (!active) return
+        const floatSamples = resample(e.inputBuffer.getChannelData(0), 44100, 8000)
+        const arr = Int16Array.from(floatSamples.map(n => n * c))
+        ipcRenderer.send('audio', arr)
+      })
+    })
+    .catch(e => console.log(e))
 }
 
 let cb: any = null
-
 ipcRenderer.on('text', (e, text) => {
   cb && cb(text)
 })
 
-export default function listen(callback: (text: any) => void){
+export default function listen(deviceId: string, callback: (text: any) => void) {
+  init(deviceId)
   active = true
   cb = callback
   return () => {
