@@ -49,6 +49,7 @@ const svgo = new SVGO({
     {
       cleanupEnableBackground: true,
     },
+    { inlineStyles: { "onlyMatchedOnce": false } },
     {
       convertStyleToAttrs: true,
     },
@@ -92,7 +93,7 @@ const svgo = new SVGO({
       removeRasterImages: false,
     },
     {
-      mergePaths: true,
+      mergePaths: false,
     },
     {
       convertShapeToPath: true,

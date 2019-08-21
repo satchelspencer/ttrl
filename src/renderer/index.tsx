@@ -101,6 +101,7 @@ function TemplateInput(props: TemplateInputProps) {
       const path = files && files[0] && files[0].path
       ipcRenderer.send('getSVG', path)
       ipcRenderer.once('svgRes', (e, res) => {
+        console.log(res)
         if (res) {
           props.onChange({
             data: res.data,
@@ -201,9 +202,14 @@ function Config(props: ConfigProps) {
 }
 
 function App() {
-  const [template, setTemplate] = useState<Template>(null),
+  const lastTemplate = localStorage.getItem('singleTemplate')
+  const [template, setTemplate] = useState<Template>(lastTemplate?JSON.parse(lastTemplate):null),
     [running, setRunning] = useState(false),
-    [deviceId, setDeviceId] = useState('default')
+    [deviceId, setDeviceId] = useState('default'),
+    setTemplatePersist = (template: Template) => {
+      setTemplate(template)
+      localStorage.setItem('singleTemplate', JSON.stringify(template))
+    }
 
   useEffect(() => {
     const handle = e => {
@@ -216,7 +222,7 @@ function App() {
   return (
     <Wrapper>
       <Config
-        {...{ template, setTemplate, deviceId, setDeviceId }}
+        {...{ template, setTemplate: setTemplatePersist, deviceId, setDeviceId }}
         onStart={() => setRunning(true)}
       />
       {running && <Text template={template} deviceId={deviceId} />}

@@ -4,13 +4,13 @@ import speech from '@google-cloud/speech'
 import './credentials'
 
 export default function init(window: BrowserWindow) {
-  const client = new speech.SpeechClient()
-
   let recognizeStream,
     canWrite = false,
     timeout
 
   function initRecStream() {
+    const client = new speech.SpeechClient()
+    console.log('init')
     canWrite = true
     if (recognizeStream) return
 
@@ -29,7 +29,7 @@ export default function init(window: BrowserWindow) {
           sampleRateHertz: 8000,
           languageCode: 'en-US',
           audioChannelCount: 1,
-          model: 'phone_call',
+          //model: 'phone_call',
         },
         interimResults: true,
       })
@@ -64,6 +64,7 @@ export default function init(window: BrowserWindow) {
 
   ipcMain.on('stop', () => {
     if (recognizeStream) {
+      console.log('sstop')
       recognizeStream.destroy()
       recognizeStream = null
     }

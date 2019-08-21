@@ -23,13 +23,18 @@
     "title": "TTRL",
     "whiteListedModules": [
       "ctyled"
-    ]
+    ],
+    "renderer": {
+      "webpackConfig": "conf/webpack.renderer.additions.js"
+    }
   },
   "dependencies": {
     "@google-cloud/speech": "^3.2.2",
     "@types/svgo": "^1.2.0",
     "ctyled": "^0.0.15",
+    "electron-context-menu": "^0.14.0",
     "express": "^4.17.1",
+    "file-loader": "^4.2.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "socket.io": "^2.2.0",

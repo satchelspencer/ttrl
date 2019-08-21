@@ -1,6 +1,11 @@
 import { app, BrowserWindow, dialog } from 'electron'
 import * as path from 'path'
 import { format as formatUrl } from 'url'
+import contextMenu from 'electron-context-menu'
+
+contextMenu({
+  showInspectElement: true
+})
 
 import initSpeech from  './speech'
 import './svgo'
