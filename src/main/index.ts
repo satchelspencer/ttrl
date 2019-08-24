@@ -17,7 +17,7 @@ let mainWindow: any = null
 dialog.showErrorBox = (title, content) => console.log('err', title, content)
 
 function createMainWindow() {
-  const window = new BrowserWindow({ webPreferences: { nodeIntegration: true } }),
+  const window = new BrowserWindow({ width: 1280, height: 800 , webPreferences: { nodeIntegration: true } }),
     windowUrl = isDevelopment
       ? `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`
       : formatUrl({

@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@google-cloud/speech": "^3.2.2",
+    "@types/lodash": "^4.14.137",
     "@types/svgo": "^1.2.0",
     "ctyled": "^0.0.15",
     "electron-context-menu": "^0.14.0",
@@ -38,6 +39,7 @@
     "lodash": "^4.17.15",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-svg-loader": "^3.0.3",
     "socket.io": "^2.2.0",
     "source-map-support": "^0.5.12",
     "svgo": "^1.2.2"

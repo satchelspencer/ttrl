@@ -4,6 +4,7 @@ import ctyled, { active, inline } from 'ctyled'
 import { ipcRenderer } from 'electron'
 
 import Text from './text'
+import Editor from './editor'
 
 const Wrapper = ctyled.div.styles({
   bg: true,
@@ -224,7 +225,7 @@ function App() {
         {...{ template, setTemplate: setTemplatePersist, deviceId, setDeviceId }}
         onStart={() => setRunning(true)}
       />
-      {running && <Text template={template} deviceId={deviceId} />}
+      {running && <Editor><Text template={template} deviceId={deviceId} /></Editor>}
     </Wrapper>
   )
 }
