@@ -101,7 +101,6 @@ function TemplateInput(props: TemplateInputProps) {
       const path = files && files[0] && files[0].path
       ipcRenderer.send('getSVG', path)
       ipcRenderer.once('svgRes', (e, res) => {
-        console.log(res)
         if (res) {
           props.onChange({
             data: res.data,
@@ -213,7 +212,7 @@ function App() {
 
   useEffect(() => {
     const handle = e => {
-      if (e.key === 'Escape') setRunning(false)
+      if (e.key === 'Escape') window.location.reload()
     }
     window.addEventListener('keydown', handle)
     return () => window.removeEventListener('keydown', handle)

@@ -6,7 +6,8 @@ import './credentials'
 export default function init(window: BrowserWindow) {
   let recognizeStream,
     canWrite = false,
-    timeout
+    timeout,
+    lastSentResults = null
 
   function initRecStream() {
     const client = new speech.SpeechClient()
@@ -14,12 +15,13 @@ export default function init(window: BrowserWindow) {
     canWrite = true
     if (recognizeStream) return
 
-    function reset() {
-      console.log('reset')
-      recognizeStream.destroy()
+    function cleanup() {
+      console.log('cleanup')
       recognizeStream = null
-      // clearTimeout(timeout)
-      // timeout = setTimeout(reset, 10000)
+      if(lastSentResults){
+        const interim = lastSentResults.filter(d => !d.final).map(d => ({...d, final: true}))
+        window.webContents.send('text', interim)
+      }
     }
 
     recognizeStream = client
@@ -35,15 +37,16 @@ export default function init(window: BrowserWindow) {
       })
       .on('error', e => {
         console.log('stream err', e)
-        recognizeStream = null
+        cleanup()
       })
       .on('data', data => {
-        // clearTimeout(timeout)
-        // timeout = setTimeout(reset, 10000)
-        const d = data.results.map(res => ({
-          text: res.alternatives[0].transcript,
-          final: res.isFinal,
-        }))
+        const d = data.results.map(res => {
+          return {
+            text: res.alternatives[0].transcript,
+            final: res.isFinal,
+          }
+        })
+        lastSentResults = d
         window.webContents.send('text', d)
       })
       .on('drain', () => {
@@ -51,7 +54,7 @@ export default function init(window: BrowserWindow) {
       })
       .on('end', () => {
         console.log('stream end')
-        recognizeStream = null
+        cleanup()
       })
   }
 

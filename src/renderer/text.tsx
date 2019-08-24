@@ -87,14 +87,14 @@ const TemplateSVGPreview = ctyled.div.styles({
   column: true,
   align: 'center',
   bg: true,
-  color: c => c.contrast(0.2),
-  scroll: true,
+  color: c => c.contrast(0.2)
 }).extendSheet`
   @font-face {
     font-family: Bebas;
     src: url("${bebas}") format('woff');
   }
 
+  overflow:hidden;
 
   position:absolute;
   width:100%;
@@ -124,12 +124,16 @@ export interface TextProps {
 
 export default function Text(props: TextProps) {
   const wrapperRef = useRef<any>(null),
-    [targetY, setTargetY] = useState(0),
+    svgRef = useRef<any>(null),
+    targetY = useRef(0),
+    y = useRef(0),
     [velocity, setVelocity] = useState(0)
+    
 
   useEffect(() => {
     const svg = wrapperRef.current.querySelector('svg'),
       lpaths = initTextPaths(svg)
+      svgRef.current = svg
 
     let output = '',
       tempOutput = ''
@@ -137,8 +141,9 @@ export default function Text(props: TextProps) {
     const stop = listen(props.deviceId, d => {
       tempOutput = ''
       d.forEach(res => {
-        if (res.final) output += res.text + ' '
-        else tempOutput += res.text + ' '
+        const text = res.text.toLowerCase().replace(/[^A-Za-z0-9 ]/g, '')
+        if (res.final) output += text + ' '
+        else tempOutput += text + ' '
       })
       //console.log(output + tempOutput)
       const last = layoutAllPaths(lpaths, output + tempOutput)
@@ -151,53 +156,32 @@ export default function Text(props: TextProps) {
           actualY = last.y * scaleRatio,
           centerScroll = actualY - wrapperHeight / 2
         
-        setTargetY(centerScroll)
+          targetY.current = centerScroll
       }else{
-        setTargetY(null)
+        targetY.current = null
       }
     })
     return stop
-
-    // setInterval(() => {
-    //   output += 'lorem ipsum '
-    //   const last = layoutAllPaths(lpaths, output)
-
-    //   if (last) {
-    //     const width = parseInt(
-    //         svg.getAttribute('width') || svg.getAttribute('viewBox').split(' ')[2]
-    //       ),
-    //       scaleRatio = wrapperRef.current.offsetWidth / width,
-    //       wrapperHeight = wrapperRef.current.offsetHeight,
-    //       actualY = last.y * scaleRatio,
-    //       centerScroll = actualY - wrapperHeight / 2
-        
-    //     setTargetY(centerScroll)
-    //     // if(Math.abs(centerScroll - wrapperRef.current.scrollTop) > wrapperHeight/4)
-    //     //   wrapperRef.current.scroll({top: centerScroll, behavior:'smooth'})
-    //   }else{
-    //     setTargetY(null)
-    //   }
-    // }, 500)
-
   }, [props.template])
 
   useEffect(() => {
     const int = setInterval(() => {
-      // if(targetY && wrapperRef && targetY !== wrapperRef.current.scrollTop){
-      //   const dy = targetY-wrapperRef.current.scrollTop
-      //   wrapperRef.current.scrollTop += dy/30
-      // }
-      wrapperRef.current.scrollTop += velocity
+      y.current += velocity
+      svgRef.current.style.top = -y.current+'px'
     }, 25)
     return () => clearInterval(int)
   }, [props.template, velocity])
 
   useEffect(() => {
-    if(targetY && wrapperRef && targetY !== wrapperRef.current.scrollTop){
-      const dy = targetY-wrapperRef.current.scrollTop
-      setVelocity(dy/40)
-    }
-  }, [targetY])
+    const int = setInterval(() => {
+      if( targetY.current !== y.current){
+        const dy = targetY.current-y.current,
+        targetVel = dy/10
+        setVelocity(velocity+(targetVel-velocity)/10)
+      }
+    }, 30)
+    return () => clearInterval(int)
+  }, [velocity])
 
   return (
     <TemplateSVGPreview
