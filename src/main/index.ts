@@ -4,10 +4,10 @@ import { format as formatUrl } from 'url'
 import contextMenu from 'electron-context-menu'
 
 contextMenu({
-  showInspectElement: true
+  showInspectElement: true,
 })
 
-import initSpeech from  './speech'
+import initSpeech from './speech'
 import './svgo'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -17,7 +17,12 @@ let mainWindow: any = null
 dialog.showErrorBox = (title, content) => console.log('err', title, content)
 
 function createMainWindow() {
-  const window = new BrowserWindow({ width: 1280, height: 800 , webPreferences: { nodeIntegration: true } }),
+  const window = new BrowserWindow({
+      width: 1280,
+      height: 800,
+    
+      webPreferences: { nodeIntegration: true },
+    }),
     windowUrl = isDevelopment
       ? `http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`
       : formatUrl({
@@ -34,6 +39,7 @@ function createMainWindow() {
     mainWindow = null
     destroySpeech()
   })
+  
   return window
 }
 

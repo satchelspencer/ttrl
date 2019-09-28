@@ -9,8 +9,11 @@ const RulerBarWrapper = ctyled.div.styles({
   padd: 0.2,
   bg: true,
   size: s => s*0.6
-}).extend`
+}).extendSheet`
   z-index:1;
+   @media print {
+    & {display:none;}
+  }
 `
 
 const RulerBarInner = ctyled.div.styles({ align: 'center', justify: 'space-between', bg: true })

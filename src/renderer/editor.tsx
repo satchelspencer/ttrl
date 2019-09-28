@@ -14,6 +14,9 @@ const EditorWrapper = ctyled.div.styles({
   position:absolute;
   width:100%;
   height:100%;
+  @media print {
+    & {display:block !important;}
+  }
 `
 
 const EditorHeader = ctyled.div.styles({
@@ -21,7 +24,11 @@ const EditorHeader = ctyled.div.styles({
   bg: true,
   lined: true,
   size: s => s * 1.2,
-})
+}).extendSheet`
+  @media print {
+    & {display:none;}
+  }
+`
 
 const EditorRow = ctyled.div.styles({
   justify: 'space-between',
@@ -54,8 +61,8 @@ const Button = ctyled.div
     font-size:${({ size }) => size * 0.8}px;
   `
 
-const Eicon = ({ name }: { name: string }) => (
-  <Button>
+const Eicon = ({ name, onClick }: { name: string, onClick?: any }) => (
+  <Button onClick={onClick}>
     <Icon name={name} />
   </Button>
 )
@@ -71,17 +78,24 @@ const EditorBody = ctyled.div.styles({
   flex: 1,
   align: 'center',
   column: true,
-}).extend`
+}).extendSheet`
   width:100%;
+  @media print {
+    & {margin-top:-18px;display:block !important;}
+  }
 `
 
 const EditorBodyInner = ctyled.div.styles({
   column: true,
-  bg: true,
   flex: 1,
-}).extend`
-width:70%;
-box-shadow:0 0 7px rgba(0,0,0,0.2);
+}).extendSheet`
+  width:70%;
+  @media print {
+    & {
+      display:block !important;
+      width:100%;
+    }
+  }
 `
 
 const MicWrapper = ctyled.div.styles({
@@ -103,6 +117,10 @@ const MicWrapper = ctyled.div.styles({
     width:3vw !important;
     height:3vw !important;
   }
+
+  @media print {
+    & {display:none;}
+  }
 `
 
 export interface EditorProps {
@@ -118,7 +136,7 @@ export default function Editor(props: EditorProps) {
             <Group>
               <Eicon name="undo" />
               <Eicon name="redo" />
-              <Eicon name="print" />
+              <Eicon name="print" onClick={() => window.print()}/>
               <Eicon name="spellcheck" />
               <Eicon name="format_paint" />
             </Group>

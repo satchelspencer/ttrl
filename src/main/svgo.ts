@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import SVGO from 'svgo'
 import fs from 'fs'
+import pathUtils from 'path'
 
 const svgo = new SVGO({
   plugins: [
@@ -49,7 +50,7 @@ const svgo = new SVGO({
     {
       cleanupEnableBackground: true,
     },
-    { inlineStyles: { "onlyMatchedOnce": false } },
+    { inlineStyles: { onlyMatchedOnce: false } },
     {
       convertStyleToAttrs: true,
     },
@@ -129,13 +130,21 @@ const svgo = new SVGO({
   ] as any,
 })
 
-ipcMain.on('getSVG', async (event, path: string) => {
-  try {
-    const raw = fs.readFileSync(path, 'utf8'),
-      res = await svgo.optimize(raw, { path })
-    event.reply('svgRes', res)
-  } catch (e) {
-    console.log(e)
-    event.reply('svgRes', null)
-  }
+ipcMain.on('getSVG', async (event, dpath: string) => {
+  const dir = fs.readdirSync(dpath),
+    svgs = dir.filter(path => pathUtils.extname(path) === '.svg'),
+    reses = await Promise.all(
+      svgs
+        .map(async path => {
+          let res = null
+          try {
+            const absPath = pathUtils.join(dpath, path),
+              raw = fs.readFileSync(absPath, 'utf8')
+            res = await svgo.optimize(raw, { path: absPath })
+          } catch (e) {}
+          return res
+        })
+        .filter(a => a)
+    )
+  event.reply('svgRes', reses)
 })
