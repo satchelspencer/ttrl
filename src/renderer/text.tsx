@@ -30,6 +30,8 @@ function initTextPaths(svg) {
       const textPath = document.createElementNS(SVG_NS, 'textPath')
       textPath.setAttribute('href', '#' + path.id)
       textPath.style.fontSize = size + 'px'
+      textPath.style.fill = path.getAttribute('stroke')
+      textPath.style.fillOpacity = path.getAttribute('stroke-opacity')
       path.setAttributeNS(null, 'stroke', 'none')
       text.appendChild(textPath)
 
