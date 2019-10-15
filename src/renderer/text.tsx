@@ -159,6 +159,7 @@ const TemplateSVGPreview = ctyled.div.styles({
 export interface TextProps {
   templates: Template[]
   deviceId: string
+  paused: boolean
 }
 
 export default function Text(props: TextProps) {
@@ -169,7 +170,12 @@ export default function Text(props: TextProps) {
     targetY = useRef(0),
     y = useRef(0),
     velocity = useRef(0),
-    [autoScroll, setAutoScroll] = useState(true)
+    [autoScroll, setAutoScroll] = useState(true),
+    paused = useRef(false)
+
+  useEffect(() => {
+    paused.current = props.paused
+  }, [props.paused])
 
   useEffect(() => {
     let allPaths = []
@@ -184,6 +190,7 @@ export default function Text(props: TextProps) {
       tempOutput = ''
 
     const stop = listen(props.deviceId, d => {
+      if(paused.current) return
       setAutoScroll(true)
       tempOutput = ''
       d.forEach(res => {

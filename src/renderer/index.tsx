@@ -300,6 +300,7 @@ function App() {
 
   const [templates, setTemplates] = useState<Template[]>(lastTemplate),
     [running, setRunning] = useState(false),
+    [paused, setPaused] = useState(false),
     [deviceId, setDeviceId] = useState('default'),
     [credentials, setCredentials] = useState(null),
     setTemplatesPersist = (templates: Template[]) => {
@@ -340,8 +341,8 @@ function App() {
         />
       )}
       {running && (
-        <Editor>
-          <Text templates={templates} deviceId={deviceId} />{' '}
+        <Editor paused={paused} onChangePause={setPaused}>
+          <Text paused={paused} templates={templates} deviceId={deviceId} />{' '}
         </Editor>
       )}
     </Wrapper>

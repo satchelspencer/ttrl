@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
 import ctyled, { active, inline } from 'ctyled'
 import _ from 'lodash'
 
@@ -98,11 +98,11 @@ const EditorBodyInner = ctyled.div.styles({
   }
 `
 
-const MicWrapper = ctyled.div.styles({
+const MicWrapper = ctyled.div.class(active).attrs({paused: false}).styles({
   bg: true,
   align: 'center',
   justify: 'center',
-  color: c => c.as(['red', 'white']).contrast(0.15),
+  color: (c, {paused}) => paused?c.contrast(-0.1):c.as(['red', 'white']).contrast(0.15),
 }).extendSheet`
   position:absolute;
   top:5%;
@@ -125,6 +125,8 @@ const MicWrapper = ctyled.div.styles({
 
 export interface EditorProps {
   children: any
+  paused: boolean
+  onChangePause: (paused: boolean) => any
 }
 
 export default function Editor(props: EditorProps) {
@@ -202,7 +204,7 @@ export default function Editor(props: EditorProps) {
         <EditorBodyInner>
         {props.children}
         </EditorBodyInner>
-        <MicWrapper>
+        <MicWrapper paused={props.paused} onClick={() => props.onChangePause(!props.paused)}>
           <Icon name="mic" />
         </MicWrapper>
       </EditorBody>
