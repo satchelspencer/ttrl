@@ -148,3 +148,8 @@ ipcMain.on('getSVG', async (event, dpath: string) => {
     )
   event.reply('svgRes', reses)
 })
+
+ipcMain.on('encodeFont', async (event, path: string) => {
+  const raw = fs.readFileSync(path).toString('base64')
+  event.reply('fontRes', raw)
+})

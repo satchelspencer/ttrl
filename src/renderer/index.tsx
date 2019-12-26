@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import ctyled, { active, inline } from 'ctyled'
 import { ipcRenderer } from 'electron'
 import _ from 'lodash'
+import pathUtils from 'path'
 
 import Text from './text'
 import Editor from './editor'
@@ -208,11 +209,7 @@ const CurrentCred = ctyled.span.styles({
   size: s => s * 0.9,
 })
 
-interface CredPickerProps {
-  credentials: string
-}
-
-function CredPicker(props: CredPickerProps) {
+const useInput = (onChange: (path: string) => any) => {
   const input = useRef<any>(null)
 
   useEffect(() => {
@@ -221,10 +218,53 @@ function CredPicker(props: CredPickerProps) {
     input.current.onchange = () => {
       const { files } = input.current
       const path = files && files[0] && files[0].path
-      ipcRenderer.send('setCred', path)
+      onChange(path)
       input.current.value = ''
     }
   }, [])
+  return input
+}
+
+function FontPicker() {
+  const fontName = localStorage.getItem('fontName'),
+    [font, setFont] = useState(fontName),
+    input = useInput(path => {
+      ipcRenderer.send('encodeFont', path)
+      ipcRenderer.once('fontRes', (e, res) => {
+        if (res && res.length) {
+          const newFontName = pathUtils.basename(path, 'woff')
+          localStorage.setItem('customfont', res)
+          localStorage.setItem('fontName', newFontName)
+          setFont(newFontName)
+        }
+      })
+    })
+
+  return (
+    <CredPickerWrapper>
+      <Button onClick={() => input.current.click()}>Change Font (.woff)</Button>
+      <CurrentCred>{font || 'default font - bebas'}</CurrentCred>
+      {font && (
+        <Icon
+          asButton
+          name="close-thin"
+          onClick={() => {
+            localStorage.removeItem('customfont')
+            localStorage.removeItem('fontName')
+            setFont(null)
+          }}
+        />
+      )}
+    </CredPickerWrapper>
+  )
+}
+
+interface CredPickerProps {
+  credentials: string
+}
+
+function CredPicker(props: CredPickerProps) {
+  const input = useInput(path => ipcRenderer.send('setCred', path))
 
   return (
     <CredPickerWrapper>
@@ -273,6 +313,7 @@ function Config(props: ConfigProps) {
       ) : (
         'loading audio inputs...'
       )}
+      <FontPicker />
       <CredPicker credentials={props.credentials} />
       <br />
       <br />

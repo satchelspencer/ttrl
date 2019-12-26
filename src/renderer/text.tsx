@@ -1,9 +1,18 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import ctyled from 'ctyled'
 
 import listen from './audio'
 import { Template } from './index'
 import bebas from './bebasneue-regular.woff'
+
+// listenx(null, () => {})
+
+// function listen(id, cb) {
+//   const int = setInterval(() => {
+//     cb([{ text: 'hayyyyyy ', final: true }])
+//   }, 100)
+//   return () => clearInterval(int)
+// }
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
@@ -108,7 +117,7 @@ const PagesWrapper = ctyled.div.styles({
   }
 `
 
-const TemplateSVGPreview = ctyled.div.styles({
+const TemplateSVGPreview = ctyled.div.attrs({ font: null }).styles({
   flex: 'none',
   column: true,
   align: 'center',
@@ -119,7 +128,8 @@ const TemplateSVGPreview = ctyled.div.styles({
 }).extendSheet`
   @font-face {
     font-family: Bebas;
-    src: url("${bebas}") format('woff');
+    src: url("${(_, { font }) =>
+      font ? 'data:font/woff;charset=utf-8;base64,' + font : bebas}") format('woff');
   }
 
   overflow:hidden;
@@ -172,19 +182,30 @@ export default function Text(props: TextProps) {
     targetY = useRef(0),
     y = useRef(0),
     velocity = useRef(0),
-    [autoScroll, setAutoScroll] = useState(true),
+    autoScroll = useRef(true),
     paused = useRef(false)
 
   useEffect(() => {
     paused.current = props.paused
   }, [props.paused])
 
+  const updateScroll = useCallback(() => {
+    if (!autoScroll.current) return
+    y.current += velocity.current
+    iwrapperRef.current.style.top = Math.min(-y.current, 0) + 'px'
+    // let i=0
+    // for(;i<10000000;i++){
+    //   Math.random()
+    // }
+    requestAnimationFrame(updateScroll)
+  }, [])
+
   useEffect(() => {
     let allPaths = []
     wrappersRef.current.forEach((wrapper, i) => {
       const svg = wrapper.querySelector('svg'),
         lpaths = initTextPaths(svg)
-      allPaths = allPaths.concat(lpaths.map(p => ({ ...p, wrapper: i })))
+      allPaths = allPaths.concat(lpaths.map(p => ({ ...(p as any), wrapper: i })))
       svgsRef.current[i] = svg
     })
 
@@ -192,8 +213,11 @@ export default function Text(props: TextProps) {
       tempOutput = ''
 
     const stop = listen(props.deviceId, d => {
-      if(paused.current) return
-      setAutoScroll(true)
+      if (paused.current) return
+      if (!autoScroll.current) {
+        autoScroll.current = true
+        updateScroll()
+      }
       tempOutput = ''
       d.forEach(res => {
         const text = res.text.toLowerCase().replace(/[^A-Za-z0-9 ]/g, '')
@@ -219,13 +243,12 @@ export default function Text(props: TextProps) {
   }, [props.templates])
 
   useEffect(() => {
-    if (!autoScroll) return undefined
-    const int = setInterval(() => {
-      y.current += velocity.current
-      iwrapperRef.current.style.top = Math.min(-y.current, 0) + 'px'
-    }, 25)
-    return () => clearInterval(int)
-  }, [props.templates, autoScroll])
+    autoScroll.current = true
+    updateScroll()
+    return () => {
+      autoScroll.current = false
+    }
+  }, [props.templates])
 
   useEffect(() => {
     if (!autoScroll) return undefined
@@ -236,21 +259,25 @@ export default function Text(props: TextProps) {
           dVel = targetVel - velocity.current
         velocity.current = velocity.current + dVel / 5
       }
-    }, 30)
+    }, 60)
     return () => clearInterval(int)
   }, [autoScroll])
 
   const handleWheel = useCallback(e => {
-    setAutoScroll(false)
+    autoScroll.current = false
     y.current += e.deltaY
     iwrapperRef.current.style.top = Math.min(-y.current, 0) + 'px'
   }, [])
+
+  const font = useMemo(() => localStorage.getItem('customfont'), [])
+  console.log(font)
 
   return (
     <PagesOuterWrapper onWheel={handleWheel} inRef={owrapperRef}>
       <PagesWrapper inRef={iwrapperRef}>
         {props.templates.map((template, i) => (
           <TemplateSVGPreview
+            font={font}
             key={i}
             inRef={r => (wrappersRef.current[i] = r)}
             dangerouslySetInnerHTML={{ __html: template.data }}
