@@ -5,8 +5,6 @@ import listen from './audio'
 import { Template } from './index'
 import bebas from './bebasneue-regular.woff'
 
-// listenx(null, () => {})
-
 // function listen(id, cb) {
 //   const int = setInterval(() => {
 //     cb([{ text: 'hayyyyyy ', final: true }])
@@ -39,6 +37,7 @@ function initTextPaths(svg) {
       const textPath = document.createElementNS(SVG_NS, 'textPath')
       textPath.setAttribute('href', '#' + path.id)
       textPath.style.fontSize = size + 'px'
+      textPath.style.strokeWidth = Math.sqrt(size / 40) + 'px'
       textPath.style.fill = path.getAttribute('stroke')
       textPath.style.fillOpacity = path.getAttribute('stroke-opacity')
       path.setAttributeNS(null, 'stroke', 'none')
@@ -117,11 +116,10 @@ const PagesWrapper = ctyled.div.styles({
   }
 `
 
-const TemplateSVGPreview = ctyled.div.attrs({ font: null }).styles({
+const TemplateSVGPreview = ctyled.div.attrs({ font: null, dark: false }).styles({
   flex: 'none',
   column: true,
   align: 'center',
-  bg: true,
   //border: 1,
   borderColor: c => c.contrast(-0.3),
   color: c => c.contrast(0.2),
@@ -131,6 +129,8 @@ const TemplateSVGPreview = ctyled.div.attrs({ font: null }).styles({
     src: url("${(_, { font }) =>
       font ? 'data:font/woff;charset=utf-8;base64,' + font : bebas}") format('woff');
   }
+
+  ${(_, { dark }) => `background:${dark ? 'black' : 'white'};`}
 
   overflow:hidden;
   width:100%;
@@ -147,9 +147,14 @@ const TemplateSVGPreview = ctyled.div.attrs({ font: null }).styles({
       page-break-after: always;
       page-break-inside: avoid;
       -webkit-region-break-inside: avoid;
+      background:white;
     }
     svg {
       display:block;
+    }
+    svg textPath {
+      fill:black !important;
+      stroke:none !important;
     }
   }
 
@@ -164,14 +169,27 @@ const TemplateSVGPreview = ctyled.div.attrs({ font: null }).styles({
   }
 
   & svg textPath {
-    fill:black;
     font-family:"Bebas";
+  }
+
+  @media screen {
+    svg textPath {
+      fill:black;
+      ${(_, { dark }) =>
+        dark &&
+        `
+        fill: none !important;
+        stroke:white;
+        stroke-linejoin: round;
+      `}
+    }
   }
 `
 export interface TextProps {
   templates: Template[]
   deviceId: string
   paused: boolean
+  dark: boolean
 }
 
 export default function Text(props: TextProps) {
@@ -277,6 +295,7 @@ export default function Text(props: TextProps) {
       <PagesWrapper inRef={iwrapperRef}>
         {props.templates.map((template, i) => (
           <TemplateSVGPreview
+            dark={props.dark}
             font={font}
             key={i}
             inRef={r => (wrappersRef.current[i] = r)}

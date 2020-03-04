@@ -141,11 +141,13 @@ function TemplateInput(props: TemplateInputProps) {
       ipcRenderer.once('svgRes', (e, res) => {
         if (res && res.length)
           props.onChange(
-            res.map(r => ({
-              data: r.data,
-              width: r.info.width,
-              height: r.info.height,
-            }))
+            res
+              .filter(r => r)
+              .map(r => ({
+                data: r.data,
+                width: r.info.width,
+                height: r.info.height,
+              }))
           )
       })
       input.current.value = ''
@@ -342,18 +344,21 @@ function App() {
   const [templates, setTemplates] = useState<Template[]>(lastTemplate),
     [running, setRunning] = useState(false),
     [paused, setPaused] = useState(false),
+    [dark, setDark] = useState(false),
     [deviceId, setDeviceId] = useState('default'),
     [credentials, setCredentials] = useState(null),
     setTemplatesPersist = (templates: Template[]) => {
       setTemplates(templates)
       localStorage.setItem('templates', JSON.stringify(templates))
     }
-
+  
   useEffect(() => {
     ipcRenderer.send('connect')
 
     const handle = e => {
       if (e.key === 'Escape') window.location.reload()
+      else if (e.key === 'd') setDark(!dark)
+      else if (e.key === ' ') setPaused(!paused)
     }
     window.addEventListener('keydown', handle)
 
@@ -382,8 +387,8 @@ function App() {
         />
       )}
       {running && (
-        <Editor paused={paused} onChangePause={setPaused}>
-          <Text paused={paused} templates={templates} deviceId={deviceId} />{' '}
+        <Editor paused={paused} onChangePause={setPaused} dark={dark}>
+          <Text paused={paused} templates={templates} deviceId={deviceId} dark={dark} />
         </Editor>
       )}
     </Wrapper>

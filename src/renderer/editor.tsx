@@ -5,7 +5,7 @@ import _ from 'lodash'
 import Icon from './icons'
 import Ruler from './ruler'
 
-const EditorWrapper = ctyled.div.styles({
+const EditorWrapper = ctyled.div.attrs({ dark: false }).styles({
   column: true,
   lined: true,
   bg: true,
@@ -61,7 +61,7 @@ const Button = ctyled.div
     font-size:${({ size }) => size * 0.8}px;
   `
 
-const Eicon = ({ name, onClick }: { name: string, onClick?: any }) => (
+const Eicon = ({ name, onClick }: { name: string; onClick?: any }) => (
   <Button onClick={onClick}>
     <Icon name={name} />
   </Button>
@@ -74,7 +74,7 @@ const Edropdown = ({ children }) => (
   </Button>
 )
 
-const EditorBody = ctyled.div.styles({
+const EditorBody = ctyled.div.attrs({ dark: false }).styles({
   flex: 1,
   align: 'center',
   column: true,
@@ -83,27 +83,37 @@ const EditorBody = ctyled.div.styles({
   @media print {
     & {margin-top:-18px;display:block !important;}
   }
+  @media screen{
+    ${(_, { dark }) => dark && `background:black;`}
+  }
 `
 
-const EditorBodyInner = ctyled.div.styles({
+const EditorBodyInner = ctyled.div.attrs({ dark: false }).styles({
   column: true,
   flex: 1,
 }).extendSheet`
-  width:70%;
+  @media screen{
+    ${(_, { dark }) => `width:${dark ? 100 : 70}%;`}
+  }
   @media print {
     & {
       display:block !important;
       width:100%;
     }
   }
+  
 `
 
-const MicWrapper = ctyled.div.class(active).attrs({paused: false}).styles({
-  bg: true,
-  align: 'center',
-  justify: 'center',
-  color: (c, {paused}) => paused?c.contrast(-0.1):c.as(['red', 'white']).contrast(0.15),
-}).extendSheet`
+const MicWrapper = ctyled.div
+  .class(active)
+  .attrs({ paused: false })
+  .styles({
+    bg: true,
+    align: 'center',
+    justify: 'center',
+    color: (c, { paused }) =>
+      paused ? c.contrast(-0.1) : c.as(['red', 'white']).contrast(0.15),
+  }).extendSheet`
   position:absolute;
   top:5%;
   left:5%;
@@ -125,88 +135,96 @@ const MicWrapper = ctyled.div.class(active).attrs({paused: false}).styles({
 
 export interface EditorProps {
   children: any
+  dark: boolean
   paused: boolean
   onChangePause: (paused: boolean) => any
 }
 
 export default function Editor(props: EditorProps) {
   return (
-    <EditorWrapper>
-      <EditorHeader>
-        <EditorRow>
-          <EditorGroupWrapper styles={{ flex: '0 1 auto' }}>
-            <Group>
-              <Eicon name="undo" />
-              <Eicon name="redo" />
-              <Eicon name="print" onClick={() => window.print()}/>
-              <Eicon name="spellcheck" />
-              <Eicon name="format_paint" />
-            </Group>
-            <Group>
-              <Edropdown>100% </Edropdown>
-            </Group>
-            <Group>
-              <Edropdown>Normal Text</Edropdown>
-            </Group>
-            <Group>
-              <Edropdown>Bebas Neue</Edropdown>
-            </Group>
-            <Group>
-              <Edropdown>&nbsp;&nbsp;&nbsp;&nbsp;</Edropdown>
-            </Group>
-            <Group>
-              <Eicon name="format_bold" />
-              <Eicon name="format_underlined" />
-              <Eicon name="format_italic" />
-              <Eicon name="format_color_text" />
-            </Group>
-            <Group>
-              <Eicon name="link" />
-              <Eicon name="comment" />
-            </Group>
-            <Group>
-              <Eicon name="format_align_left" />
-              <Eicon name="format_align_center" />
-              <Eicon name="format_align_right" />
-              <Eicon name="format_align_justify" />
-            </Group>
-            <Group>
-              <Eicon name="format_line_spacing" />
-            </Group>
-            <Group>
-              <Edropdown>
-                <Icon name="format_list_numbered" />
-              </Edropdown>
-              <Edropdown>
-                <Icon name="format_list_bulleted" />
-              </Edropdown>
-              <Eicon name="format_indent_decrease" />
-              <Eicon name="format_indent_increase" />
-            </Group>
-            <Group>
-              <Eicon name="format_clear" />
-            </Group>
-          </EditorGroupWrapper>
-          <EditorGroupWrapper>
-            <Group>
-              <Edropdown>
-                <Icon name="edit" /> &nbsp; Editing &nbsp;
-              </Edropdown>
-            </Group>
-            <Group>
-              <Eicon name="expand_less" />
-            </Group>
-          </EditorGroupWrapper>
-        </EditorRow>
-      </EditorHeader>
-      <Ruler />
-      <EditorBody>
-        <EditorBodyInner>
-        {props.children}
-        </EditorBodyInner>
-        <MicWrapper paused={props.paused} onClick={() => props.onChangePause(!props.paused)}>
-          <Icon name="mic" />
-        </MicWrapper>
+    <EditorWrapper dark={props.dark}>
+      {!props.dark && (
+        <>
+          <EditorHeader>
+            <EditorRow>
+              <EditorGroupWrapper styles={{ flex: '0 1 auto' }}>
+                <Group>
+                  <Eicon name="undo" />
+                  <Eicon name="redo" />
+                  <Eicon name="print" onClick={() => window.print()} />
+                  <Eicon name="spellcheck" />
+                  <Eicon name="format_paint" />
+                </Group>
+                <Group>
+                  <Edropdown>100% </Edropdown>
+                </Group>
+                <Group>
+                  <Edropdown>Normal Text</Edropdown>
+                </Group>
+                <Group>
+                  <Edropdown>Bebas Neue</Edropdown>
+                </Group>
+                <Group>
+                  <Edropdown>&nbsp;&nbsp;&nbsp;&nbsp;</Edropdown>
+                </Group>
+                <Group>
+                  <Eicon name="format_bold" />
+                  <Eicon name="format_underlined" />
+                  <Eicon name="format_italic" />
+                  <Eicon name="format_color_text" />
+                </Group>
+                <Group>
+                  <Eicon name="link" />
+                  <Eicon name="comment" />
+                </Group>
+                <Group>
+                  <Eicon name="format_align_left" />
+                  <Eicon name="format_align_center" />
+                  <Eicon name="format_align_right" />
+                  <Eicon name="format_align_justify" />
+                </Group>
+                <Group>
+                  <Eicon name="format_line_spacing" />
+                </Group>
+                <Group>
+                  <Edropdown>
+                    <Icon name="format_list_numbered" />
+                  </Edropdown>
+                  <Edropdown>
+                    <Icon name="format_list_bulleted" />
+                  </Edropdown>
+                  <Eicon name="format_indent_decrease" />
+                  <Eicon name="format_indent_increase" />
+                </Group>
+                <Group>
+                  <Eicon name="format_clear" />
+                </Group>
+              </EditorGroupWrapper>
+              <EditorGroupWrapper>
+                <Group>
+                  <Edropdown>
+                    <Icon name="edit" /> &nbsp; Editing &nbsp;
+                  </Edropdown>
+                </Group>
+                <Group>
+                  <Eicon name="expand_less" />
+                </Group>
+              </EditorGroupWrapper>
+            </EditorRow>
+          </EditorHeader>
+          <Ruler />
+        </>
+      )}
+      <EditorBody dark={props.dark}>
+        <EditorBodyInner dark={props.dark}>{props.children}</EditorBodyInner>
+        {!props.dark && (
+          <MicWrapper
+            paused={props.paused}
+            onClick={() => props.onChangePause(!props.paused)}
+          >
+            <Icon name="mic" />
+          </MicWrapper>
+        )}
       </EditorBody>
     </EditorWrapper>
   )
